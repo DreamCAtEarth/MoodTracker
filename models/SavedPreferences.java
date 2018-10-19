@@ -14,8 +14,10 @@ public class SavedPreferences
 {
     private static SavedPreferences instance;
     private static String PREFS = "PREFS";
-    private static String MOODS = "MOODS";
+
     private SharedPreferences prefs;
+
+    private static String MOODS = "MOODS";
 
     private SavedPreferences(Context context)
     {
@@ -55,5 +57,9 @@ public class SavedPreferences
             moods = gson.fromJson(json, type);
         }
         return moods;
+    }
+
+    public SharedPreferences getPrefs() {
+        return prefs;
     }
 }
