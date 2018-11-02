@@ -14,6 +14,8 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.graphics.Color;
 
+import java.text.Format;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Calendar;
 import java.util.ArrayList;
@@ -24,28 +26,26 @@ import com.poupel.benjamin.moodtracker.models.Mood;
 import com.poupel.benjamin.moodtracker.models.SavedPreferences;
 
 
-public class MainActivity extends AppCompatActivity
-{
+public class MainActivity extends AppCompatActivity {
     private ImageView mSmileyImageView;
     private Button mCommentButton;
     private Button mHistoryButton;
 
     private ArrayList<Mood> moodList = new ArrayList<>();
-    private ArrayList<Mood> historicMoodList = new ArrayList<>();
+    private ArrayList<Mood> historicMoodList;
     private ListIterator<Mood> moodIterator;
     private int moodIndex;
 
     private float yUp;
     private float yDown;
-    private static final int MIN_MOVE_REQUIRED_FOR_SLIDE=200;
-
-    private Calendar nowDate = new GregorianCalendar();
-    private Calendar moodDate = new GregorianCalendar();
+    private static final int MIN_MOVE_REQUIRED_FOR_SLIDE = 200;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        historicMoodList = SavedPreferences.getInstance(this).getMoods();
 
         initMood();
 
@@ -77,35 +77,38 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onStop() {
         super.onStop();
-        //saveMood();
-        historicMoodList.remove(historicMoodList.size()-1);
+        //Si un item a la même date que celle d'aujourd'hui on le re-sauvegarde
+        historicMoodList.get(historicMoodList.size()-1).setDate(new Date());
+        if (DateUtil.isCurrentDate(historicMoodList.get(historicMoodList.size() - 1).getDate())) {
+            historicMoodList.remove(historicMoodList.size() - 1);
+        }
+        saveMood();
     }
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         int action = event.getActionMasked();
-        switch(action) {
-            case (MotionEvent.ACTION_DOWN) :
+        switch (action) {
+            case (MotionEvent.ACTION_DOWN):
                 yDown = event.getY();
                 return true;
-            case (MotionEvent.ACTION_UP) :
+            case (MotionEvent.ACTION_UP):
                 yUp = event.getY();
                 if (yDown > (yUp + MIN_MOVE_REQUIRED_FOR_SLIDE)) /* Move Up */ {
-                    if(moodIterator.hasNext()) {
-                        if(moodIndex < moodList.size() - 1)
+                    if (moodIterator.hasNext()) {
+                        if (moodIndex < moodList.size() - 1)
                             moodIndex++;
                     }
-                }
-                else if(yDown < (yUp - MIN_MOVE_REQUIRED_FOR_SLIDE)) /* Move Down*/ {
-                    if(moodIterator.hasPrevious()) {
-                        if(moodIndex > 0)
+                } else if (yDown < (yUp - MIN_MOVE_REQUIRED_FOR_SLIDE)) /* Move Down*/ {
+                    if (moodIterator.hasPrevious()) {
+                        if (moodIndex > 0)
                             moodIndex--;
                     }
                 }
                 displayMood();
 
                 return true;
-            default :
+            default:
                 return super.onTouchEvent(event);
         }
     }
@@ -125,11 +128,10 @@ public class MainActivity extends AppCompatActivity
         moodList.add(happy);
         moodList.add(superHappy);
 
-        if (SavedPreferences.getInstance(this).getMoods().size() > 0) {
-            selectedMood = SavedPreferences.getInstance(this).getMoods().get(historicMoodList.size()-1);
-        }
-        else{
-            selectedMood = new Mood(happy.getId(),happy.getIcon(),happy.getColor());
+        if (historicMoodList.size() > 0) {
+            selectedMood = historicMoodList.get(historicMoodList.size() - 1);
+        } else {
+            selectedMood = new Mood(happy.getId(), happy.getIcon(), happy.getColor());
             historicMoodList.add(selectedMood);
         }
         moodIndex = selectedMood.getId();
