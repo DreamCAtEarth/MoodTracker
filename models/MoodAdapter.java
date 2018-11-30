@@ -28,10 +28,10 @@ public class MoodAdapter extends RecyclerView.Adapter<MoodViewHolder> {
         LayoutInflater inflater = LayoutInflater.from(context);
         View view = inflater.inflate(R.layout.mood_item, parent, false);
 
-        return new MoodViewHolder(view);
+        return new MoodViewHolder(view, context);
     }
 
-    // UPDATE VIEW HOLDER WITH A GITHUBUSER
+    // UPDATE VIEW HOLDER WITH A MOOD
     @Override
     public void onBindViewHolder(MoodViewHolder viewHolder, int position) {
         viewHolder.updateWithMood(this.moodsList.get(position));

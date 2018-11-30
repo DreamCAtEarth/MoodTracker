@@ -5,12 +5,9 @@ import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 
-import com.poupel.benjamin.moodtracker.models.Mood;
 import com.poupel.benjamin.moodtracker.models.MoodAdapter;
 import com.poupel.benjamin.moodtracker.models.SavedPreferences;
 
-import java.util.ArrayList;
-import java.util.List;
 
 public class HistoryActivity extends AppCompatActivity {
 

@@ -1,5 +1,8 @@
 package com.poupel.benjamin.moodtracker;
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -10,16 +13,10 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.app.AlertDialog;
-import android.view.Window;
-import android.view.WindowManager;
 import android.graphics.Color;
 
-import java.text.Format;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.Calendar;
 import java.util.ArrayList;
-import java.util.GregorianCalendar;
 import java.util.ListIterator;
 
 import com.poupel.benjamin.moodtracker.models.Mood;
@@ -32,7 +29,7 @@ public class MainActivity extends AppCompatActivity {
     private Button mHistoryButton;
 
     private ArrayList<Mood> moodList = new ArrayList<>();
-    private ArrayList<Mood> historicMoodList;
+    private ArrayList<Mood> historicMoodList = new ArrayList<>();
     private ListIterator<Mood> moodIterator;
     private int moodIndex;
 
@@ -44,6 +41,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        setTheTimeToUpdateTables(this);
 
         historicMoodList = SavedPreferences.getInstance(this).getMoods();
 
@@ -77,12 +76,8 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStop() {
         super.onStop();
-        //Si un item a la même date que celle d'aujourd'hui on le re-sauvegarde
-        historicMoodList.get(historicMoodList.size()-1).setDate(new Date());
-        if (DateUtil.isCurrentDate(historicMoodList.get(historicMoodList.size() - 1).getDate())) {
-            historicMoodList.remove(historicMoodList.size() - 1);
-        }
-        saveMood();
+        SaveHelper saveHelper = new SaveHelper();
+        saveHelper.saveMood(moodList.get(moodIndex), SavedPreferences.getInstance(this));
     }
 
     @Override
@@ -95,14 +90,14 @@ public class MainActivity extends AppCompatActivity {
             case (MotionEvent.ACTION_UP):
                 yUp = event.getY();
                 if (yDown > (yUp + MIN_MOVE_REQUIRED_FOR_SLIDE)) /* Move Up */ {
-                    if (moodIterator.hasNext()) {
-                        if (moodIndex < moodList.size() - 1)
-                            moodIndex++;
+                    if (moodIterator.hasNext() && moodIndex < moodList.size() - 1) {
+                        moodIndex++;
+                        moodIterator.next();
                     }
                 } else if (yDown < (yUp - MIN_MOVE_REQUIRED_FOR_SLIDE)) /* Move Down*/ {
-                    if (moodIterator.hasPrevious()) {
-                        if (moodIndex > 0)
-                            moodIndex--;
+                    if (moodIterator.hasPrevious() && moodIndex > 0) {
+                        moodIndex--;
+                        moodIterator.previous();
                     }
                 }
                 displayMood();
@@ -131,8 +126,7 @@ public class MainActivity extends AppCompatActivity {
         if (historicMoodList.size() > 0) {
             selectedMood = historicMoodList.get(historicMoodList.size() - 1);
         } else {
-            selectedMood = new Mood(happy.getId(), happy.getIcon(), happy.getColor());
-            historicMoodList.add(selectedMood);
+            selectedMood = happy;
         }
         moodIndex = selectedMood.getId();
         moodIterator = moodList.listIterator(moodIndex);
@@ -143,10 +137,18 @@ public class MainActivity extends AppCompatActivity {
         mSmileyImageView.setImageDrawable(getResources().getDrawable(moodList.get(moodIndex).getIcon()));
     }
 
-    private void saveMood() {
-        historicMoodList.add(moodList.get(moodIndex));
-        historicMoodList.get(moodIndex).setDate(new Date());
-        SavedPreferences.getInstance(this).storeMoods(historicMoodList);
+    private void setTheTimeToUpdateTables(Context context) {
+        Log.i("Update table function", "Yes");
+        AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+        Intent alarmIntent = new Intent(context, AlarmManagerBroadcastReceiver.class);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, alarmIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        alarmManager.cancel(pendingIntent);
+        Calendar alarmStartTime = Calendar.getInstance();
+        alarmStartTime.set(Calendar.HOUR_OF_DAY, 0);
+        alarmStartTime.set(Calendar.MINUTE, 0);
+        alarmStartTime.set(Calendar.SECOND, 0);
+        alarmManager.setRepeating(AlarmManager.RTC_WAKEUP,alarmStartTime.getTimeInMillis(),AlarmManager.INTERVAL_DAY,pendingIntent);
+        Log.d("Alarm", "Set for midnight");
     }
 
 }
