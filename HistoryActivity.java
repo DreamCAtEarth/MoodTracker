@@ -10,7 +10,6 @@ import com.poupel.benjamin.moodtracker.models.SavedPreferences;
 
 /**
  * L'acitivité sert de controleur général pour toute la View des items de moods à afficher dynamiquement grâce au principe économique de la RecyclerView
- *
  */
 public class HistoryActivity extends AppCompatActivity {
 
@@ -41,7 +40,7 @@ public class HistoryActivity extends AppCompatActivity {
     // CONFIGURATION
     // -----------------
     // 3 - Configure RecyclerView, Adapter, LayoutManager & glue it together
-    private void configureRecyclerView(RecyclerView recyclerView){
+    private void configureRecyclerView(RecyclerView recyclerView) {
         // 3.1 - Reset list
         // List<Mood> historicMoodList = new ArrayList<>();
         // 3.2 - Create adapter passing the list of users

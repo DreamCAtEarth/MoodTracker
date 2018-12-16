@@ -34,6 +34,7 @@ import com.poupel.benjamin.moodtracker.models.SavedPreferences;
  * <li>Regarder l'historique des 7 dernières humeurs de la semaine.</li>
  * </ul>
  * </p>
+ *
  * @author Benjamin POUPEL
  * @version 1.0
  */
@@ -58,7 +59,6 @@ public class MainActivity extends AppCompatActivity {
     private ListIterator<Mood> moodIterator;
     /**
      * L'index est nécessaire aussi pour connaitre à un instant t sa position exacte
-     *
      */
     private int moodIndex;
     /**
@@ -97,14 +97,13 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 AlertDialog.Builder dialog = new AlertDialog.Builder(MainActivity.this);
                 final EditText editText = new EditText(MainActivity.this);
-                editText.setText(moodList.get(moodIndex).getComment());
                 dialog.setView(editText);
 
                 dialog.setPositiveButton(R.string.validate, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         moodList.get(moodIndex).setComment(editText.getText().toString());
-                        dialog.cancel();
+                        dialog.dismiss();
                     }
                 });
                 dialog.setNegativeButton(R.string.cancelate, new DialogInterface.OnClickListener() {
@@ -216,7 +215,7 @@ public class MainActivity extends AppCompatActivity {
             alarmStartTime.set(Calendar.HOUR_OF_DAY, 0);
             alarmStartTime.set(Calendar.MINUTE, 0);
             alarmStartTime.set(Calendar.SECOND, 0);
-            alarmManager.setRepeating(AlarmManager.RTC_WAKEUP,alarmStartTime.getTimeInMillis(),AlarmManager.INTERVAL_DAY,pendingIntent);
+            alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, alarmStartTime.getTimeInMillis(), AlarmManager.INTERVAL_DAY, pendingIntent);
         }
     }
 

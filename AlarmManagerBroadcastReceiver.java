@@ -17,8 +17,9 @@ public class AlarmManagerBroadcastReceiver extends BroadcastReceiver {
 
     /**
      * Cette méthode est l'event de réception du mood par défaut
+     *
      * @param context le contexte de l'activité
-     * @param intent l'intent pour passer à une autre activité si besoin
+     * @param intent  l'intent pour passer à une autre activité si besoin
      */
     @Override
     public void onReceive(Context context, Intent intent) {
