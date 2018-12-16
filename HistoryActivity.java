@@ -8,11 +8,16 @@ import android.support.v7.widget.RecyclerView;
 import com.poupel.benjamin.moodtracker.models.MoodAdapter;
 import com.poupel.benjamin.moodtracker.models.SavedPreferences;
 
-
+/**
+ * L'acitivité sert de controleur général pour toute la View des items de moods à afficher dynamiquement grâce au principe économique de la RecyclerView
+ *
+ */
 public class HistoryActivity extends AppCompatActivity {
 
     //FOR DATA
-
+    /**
+     * Création de l'activité et intégration de la RecyclerView (puis configuration de celle-ci)
+     */
     @Override
     public void onCreate(Bundle savedInstanceState) {
 
@@ -24,6 +29,9 @@ public class HistoryActivity extends AppCompatActivity {
         this.configureRecyclerView(recyclerView); // - 4 Call during UI creation
     }
 
+    /**
+     * Lorsque l'activité est fermée, il ne se passe rien de spécial, on appelle le destructeur de la classe supérieure
+     */
     @Override
     public void onDestroy() {
         super.onDestroy();
@@ -32,7 +40,6 @@ public class HistoryActivity extends AppCompatActivity {
     // -----------------
     // CONFIGURATION
     // -----------------
-
     // 3 - Configure RecyclerView, Adapter, LayoutManager & glue it together
     private void configureRecyclerView(RecyclerView recyclerView){
         // 3.1 - Reset list

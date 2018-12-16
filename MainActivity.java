@@ -3,7 +3,9 @@ package com.poupel.benjamin.moodtracker;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.media.MediaPlayer;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -22,21 +24,57 @@ import java.util.ListIterator;
 import com.poupel.benjamin.moodtracker.models.Mood;
 import com.poupel.benjamin.moodtracker.models.SavedPreferences;
 
+/**
+ * <b>La MainActivity est l'écran principal de l'application Android.</b>
+ * <p>
+ * Vous avez la possibilité depuis cette activité de :
+ * <ul>
+ * <li>Sélectionner une humeur (positive vers le haut, négative vers le bas).</li>
+ * <li>Associer un commentaire à l'humeur.</li>
+ * <li>Regarder l'historique des 7 dernières humeurs de la semaine.</li>
+ * </ul>
+ * </p>
+ * @author Benjamin POUPEL
+ * @version 1.0
+ */
+
 
 public class MainActivity extends AppCompatActivity {
+    /**
+     * Il s'agit du conteneur de l'émoticône
+     */
     private ImageView mSmileyImageView;
-    private Button mCommentButton;
-    private Button mHistoryButton;
-
+    /**
+     * L'humeur est contenue dans une liste de moods à présenter à l'utilisateur
+     */
     private ArrayList<Mood> moodList = new ArrayList<>();
+    /**
+     * Il nous en faut une seconde pour stocker l'historique de moods (attention ce n'est pas la même liste)
+     */
     private ArrayList<Mood> historicMoodList = new ArrayList<>();
+    /**
+     * Un iterator est nécessaire pour passer aisément d'un mood à l'autre
+     */
     private ListIterator<Mood> moodIterator;
+    /**
+     * L'index est nécessaire aussi pour connaitre à un instant t sa position exacte
+     *
+     */
     private int moodIndex;
-
-    private float yUp;
+    /**
+     * YDown correspond à la coordonnée ordonnée de relâchement du doigt lors du OnTouchEvent.
+     * On en a besoin car on doit réactualiser cette donnée en permanence
+     */
     private float yDown;
+    /**
+     * Cette constante est là pour indiquer la distance nécessaire parcourue en pixels pour valider un changement de mood
+     */
     private static final int MIN_MOVE_REQUIRED_FOR_SLIDE = 200;
 
+    /**
+     * @see MainActivity#onCreate(Bundle)
+     * Le OnCreate est le process de départ de l'activité, c'est là qu'on récupère les ids du layout et qu'on charge les paramètres par défaut
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -48,23 +86,38 @@ public class MainActivity extends AppCompatActivity {
 
         initMood();
 
-        mHistoryButton = findViewById(R.id.ButtonMoodsHistory);
-        mCommentButton = findViewById(R.id.ButtonAddComment);
+        Button historyButton = findViewById(R.id.ButtonMoodsHistory);
+        Button commentButton = findViewById(R.id.ButtonAddComment);
         mSmileyImageView = findViewById(R.id.imageViewHappy);
 
         displayMood();
 
-        mCommentButton.setOnClickListener(new View.OnClickListener() {
+        commentButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                AlertDialog dialog = new AlertDialog.Builder(MainActivity.this).create();
-                EditText editText = new EditText(MainActivity.this);
+                AlertDialog.Builder dialog = new AlertDialog.Builder(MainActivity.this);
+                final EditText editText = new EditText(MainActivity.this);
+                editText.setText(moodList.get(moodIndex).getComment());
                 dialog.setView(editText);
+
+                dialog.setPositiveButton(R.string.validate, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        moodList.get(moodIndex).setComment(editText.getText().toString());
+                        dialog.cancel();
+                    }
+                });
+                dialog.setNegativeButton(R.string.cancelate, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.cancel();
+                    }
+                });
                 dialog.show();
             }
         });
 
-        mHistoryButton.setOnClickListener(new View.OnClickListener() {
+        historyButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent HistoryActivity = new Intent(MainActivity.this, HistoryActivity.class);
@@ -73,6 +126,10 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * @see MainActivity#onStop()
+     * Le OnStop s'enclenche lorsque cette activité se termine (fermeture ou passage à une autre activité), c'est là qu'on y sauvegarde le mood
+     */
     @Override
     protected void onStop() {
         super.onStop();
@@ -80,15 +137,21 @@ public class MainActivity extends AppCompatActivity {
         saveHelper.saveMood(moodList.get(moodIndex), SavedPreferences.getInstance(this));
     }
 
+    /**
+     * @see MainActivity#onTouchEvent(MotionEvent)
+     * On se sert du OnTouchEvent pour slider d'une humeur à l'autre, on a besoin de la coordonnée sur l'axe des ordonnées pour ça.
+     * On met à jour aussi l'index puis on affiche le mood via une méthode privée (pour ne pas surcharger cette méthode) et on joue le son.
+     */
     @Override
     public boolean onTouchEvent(MotionEvent event) {
+        final MediaPlayer mp = MediaPlayer.create(this, R.raw.guitar);
         int action = event.getActionMasked();
         switch (action) {
             case (MotionEvent.ACTION_DOWN):
                 yDown = event.getY();
                 return true;
             case (MotionEvent.ACTION_UP):
-                yUp = event.getY();
+                float yUp = event.getY();
                 if (yDown > (yUp + MIN_MOVE_REQUIRED_FOR_SLIDE)) /* Move Up */ {
                     if (moodIterator.hasNext() && moodIndex < moodList.size() - 1) {
                         moodIndex++;
@@ -101,13 +164,18 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
                 displayMood();
-
+                mp.start();
                 return true;
             default:
                 return super.onTouchEvent(event);
         }
     }
 
+    /**
+     * 3 méthodes privées existent pour soi sélectionner le mood par défaut ou choisi précédemment,
+     * soi afficher le mood (avec les Ressources et le layout), soi enclencher l'alarmeManager (pour actualiser le mood par défaut à minuit).
+     * L'alarmManager est un service qui prends en compte l'heure du téléphone même lorsque l'appli ne tourne pas.
+     */
     private void initMood() {
         Mood selectedMood;
 
@@ -142,13 +210,14 @@ public class MainActivity extends AppCompatActivity {
         AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
         Intent alarmIntent = new Intent(context, AlarmManagerBroadcastReceiver.class);
         PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, alarmIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-        alarmManager.cancel(pendingIntent);
-        Calendar alarmStartTime = Calendar.getInstance();
-        alarmStartTime.set(Calendar.HOUR_OF_DAY, 0);
-        alarmStartTime.set(Calendar.MINUTE, 0);
-        alarmStartTime.set(Calendar.SECOND, 0);
-        alarmManager.setRepeating(AlarmManager.RTC_WAKEUP,alarmStartTime.getTimeInMillis(),AlarmManager.INTERVAL_DAY,pendingIntent);
-        Log.d("Alarm", "Set for midnight");
+        if (alarmManager != null) {
+            alarmManager.cancel(pendingIntent);
+            Calendar alarmStartTime = Calendar.getInstance();
+            alarmStartTime.set(Calendar.HOUR_OF_DAY, 0);
+            alarmStartTime.set(Calendar.MINUTE, 0);
+            alarmStartTime.set(Calendar.SECOND, 0);
+            alarmManager.setRepeating(AlarmManager.RTC_WAKEUP,alarmStartTime.getTimeInMillis(),AlarmManager.INTERVAL_DAY,pendingIntent);
+        }
     }
 
 }

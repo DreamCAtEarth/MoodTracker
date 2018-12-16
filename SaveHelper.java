@@ -6,9 +6,18 @@ import com.poupel.benjamin.moodtracker.models.SavedPreferences;
 import java.util.ArrayList;
 import java.util.Date;
 
+/**
+ * Cette classe est dédiée aux conditions et aux opérations de sauvegarde des moods intermédiaires entre l'activité et le singleTon gérant les SharedPreferences
+ */
 public class SaveHelper {
 
-
+    /**
+     * saveMood est là pour sauvegarder dans les Sharedpreferences des moods choisis durant les 7 derniers jours
+     * Si la taille de la liste est trop grande, si un mood arrive alors qu'il est du même jour qu'un autre, ou si la date d'un mood est trop ancienne (plus d'une seumaine)
+     * alors on supprime, par contre la sauvegarde proprement dite dans les SharedPreferences est déléguée à SavedPreferences
+     * @param mood issu de la classe Mood
+     * @param savedPreferences qui est la sharedPreference à utiliser
+     */
     public void saveMood(Mood mood, SavedPreferences savedPreferences) {
         ArrayList<Mood> historicMoodList = savedPreferences.getMoods();
         mood.setDate(new Date());
@@ -23,13 +32,13 @@ public class SaveHelper {
         if (historicMoodList.size() > 8) {
             historicMoodList.remove(0);
         }
-
-        /*ListIterator<Mood> iterator = historicMoodList.listIterator(0);
-        while (iterator.hasNext()) {
-            Mood item = iterator.next();
-            if(item.getDate() == null || DateUtil.getDateGapWithToday(item.getDate()) > 7)
-                historicMoodList.remove(item);
-        }*/
+        ArrayList<Mood> toDelete = new ArrayList<>();
+        for(Mood mood:historicMoodList)
+        {
+            if(mood.getDate() == null || DateUtil.getDateGapWithToday(mood.getDate()) > 7)
+                toDelete.add(mood);
+        }
+        historicMoodList.removeAll(toDelete);
         savedPreferences.storeMoods(historicMoodList);
     }
 }

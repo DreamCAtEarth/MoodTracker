@@ -2,6 +2,14 @@ package com.poupel.benjamin.moodtracker.models;
 
 import java.util.Date;
 
+/**
+ * La classe Mood contient un id général, qui va servir à indiquer sa valeur d'humeur
+ * Un id d'icon provenant du layout
+ * Un id de couleur provenant des constantes R de couleur
+ * Une date de la classe Date
+ * Un commentaire
+ * Chaque élément sera récupéré ou mis à jour par les getters et les setters lorsqu'il sera nécessaire
+ */
 public class Mood
 {
     private int id;
