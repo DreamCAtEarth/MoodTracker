@@ -46,7 +46,7 @@ public class SavedPreferences {
      *
      * @param moods liste de moods à stocker
      */
-    public void storeMoods(ArrayList<Mood> moods) {
+    void storeMoods(ArrayList<Mood> moods) {
         //start writing (open the file)
         SharedPreferences.Editor editor = prefs.edit();
         //put the data

@@ -1,7 +1,6 @@
-package com.poupel.benjamin.moodtracker;
+package com.poupel.benjamin.moodtracker.models;
 
-import com.poupel.benjamin.moodtracker.models.Mood;
-import com.poupel.benjamin.moodtracker.models.SavedPreferences;
+import com.poupel.benjamin.moodtracker.DateUtil;
 
 import java.util.ArrayList;
 import java.util.Date;

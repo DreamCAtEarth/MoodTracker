@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Color;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -17,11 +18,14 @@ import com.poupel.benjamin.moodtracker.models.Mood;
  */
 public class MoodViewHolder extends RecyclerView.ViewHolder {
 
-    private static final int BASE_ITEM_WIDTH = 150;
     private Context mContext;
-    private final TextView textView;
-    private final RelativeLayout moodBackgroundColor;
-    private final Button mImageView;
+    private TextView textView;
+    private RelativeLayout moodBackgroundColor;
+    private Button mImageView;
+
+    private ViewGroup parent;
+
+    private static final int MAX_HISTORIC_SIZE = 7;
 
     /**
      * Lz constructeur sert à initialiser le contexte d'activité et chacun des éléments de tout l'item
@@ -29,12 +33,14 @@ public class MoodViewHolder extends RecyclerView.ViewHolder {
      * @param itemView la View concernée qui contiendra la liste d'items sencée représenter chacun un mood
      * @param context  le contexte de l'activité (History Activity)
      */
-    public MoodViewHolder(View itemView, Context context) {
+    public MoodViewHolder(View itemView, Context context, ViewGroup parent) {
         super(itemView);
         mContext = context;
         textView = itemView.findViewById(R.id.mood_item_week);
         moodBackgroundColor = itemView.findViewById(R.id.mood_total_item);
         mImageView = itemView.findViewById(R.id.mood_item_week_comment);
+
+        this.parent = parent;
     }
 
     /**
@@ -50,8 +56,6 @@ public class MoodViewHolder extends RecyclerView.ViewHolder {
         final String comment = mood.getComment();
         int numberOfDays = DateUtil.getDateGapWithToday(mood.getDate());
         moodBackgroundColor.setBackgroundColor(Color.parseColor(mContext.getResources().getString(mood.getColor())));
-        float density = mContext.getResources().getDisplayMetrics().density;
-        moodBackgroundColor.getLayoutParams().width = (int) (BASE_ITEM_WIDTH * density + mood.getId() * 65 * density);
 
         if (comment == null || comment.isEmpty())
             mImageView.setVisibility(View.INVISIBLE);
@@ -66,11 +70,19 @@ public class MoodViewHolder extends RecyclerView.ViewHolder {
 
         }
 
+        int widthToSet = parent.getWidth();
+        int heightToSet = parent.getHeight();
+
+        float widthToGet = widthToSet * ((mood.getId() + 1.0f) / 5.0f);
+        float heightToGet = heightToSet / MAX_HISTORIC_SIZE;
+
+        int widthResult = Math.round(widthToGet);
+        int heightResult = Math.round(heightToGet);
+
+        moodBackgroundColor.getLayoutParams().width = widthResult;
+        moodBackgroundColor.getLayoutParams().height = heightResult;
+
         switch (numberOfDays) {
-            case 0:
-                //textView.setText("Aujourd'hui");
-                moodBackgroundColor.setVisibility(View.INVISIBLE);
-                break;
             case 1:
                 textView.setText(R.string.yesterday);
                 break;
@@ -91,9 +103,6 @@ public class MoodViewHolder extends RecyclerView.ViewHolder {
                 break;
             case 7:
                 textView.setText(R.string.sevenDaysAgo);
-                break;
-            default:
-                moodBackgroundColor.setVisibility(View.INVISIBLE);
                 break;
         }
     }

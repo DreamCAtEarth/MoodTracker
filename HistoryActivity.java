@@ -5,8 +5,11 @@ import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 
+import com.poupel.benjamin.moodtracker.models.Mood;
 import com.poupel.benjamin.moodtracker.models.MoodAdapter;
 import com.poupel.benjamin.moodtracker.models.SavedPreferences;
+
+import java.util.ArrayList;
 
 /**
  * L'acitivité sert de controleur général pour toute la View des items de moods à afficher dynamiquement grâce au principe économique de la RecyclerView
@@ -14,6 +17,7 @@ import com.poupel.benjamin.moodtracker.models.SavedPreferences;
 public class HistoryActivity extends AppCompatActivity {
 
     //FOR DATA
+
     /**
      * Création de l'activité et intégration de la RecyclerView (puis configuration de celle-ci)
      */
@@ -44,7 +48,10 @@ public class HistoryActivity extends AppCompatActivity {
         // 3.1 - Reset list
         // List<Mood> historicMoodList = new ArrayList<>();
         // 3.2 - Create adapter passing the list of users
-        MoodAdapter adapter = new MoodAdapter(SavedPreferences.getInstance(this).getMoods());
+        ArrayList<Mood> moods = SavedPreferences.getInstance(this).getMoods();
+        if (!moods.isEmpty() && (moods.get(moods.size() - 1).getDate() == null || DateUtil.getDateGapWithToday(moods.get(moods.size() - 1).getDate()) == 0))
+            moods.remove(moods.size() - 1);
+        MoodAdapter adapter = new MoodAdapter(moods);
         // 3.3 - Attach the adapter to the recyclerview to populate items
         recyclerView.setAdapter(adapter);
         // 3.4 - Set layout manager to position the items

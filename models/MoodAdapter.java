@@ -43,7 +43,7 @@ public class MoodAdapter extends RecyclerView.Adapter<MoodViewHolder> {
         LayoutInflater inflater = LayoutInflater.from(context);
         View view = inflater.inflate(R.layout.mood_item, parent, false);
 
-        return new MoodViewHolder(view, context);
+        return new MoodViewHolder(view, context, parent);
     }
 
     // UPDATE VIEW HOLDER WITH A MOOD

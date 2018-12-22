@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 
 import com.poupel.benjamin.moodtracker.models.Mood;
+import com.poupel.benjamin.moodtracker.models.SaveHelper;
 import com.poupel.benjamin.moodtracker.models.SavedPreferences;
 
 import java.util.Date;

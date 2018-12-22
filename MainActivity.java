@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.ListIterator;
 
 import com.poupel.benjamin.moodtracker.models.Mood;
+import com.poupel.benjamin.moodtracker.models.SaveHelper;
 import com.poupel.benjamin.moodtracker.models.SavedPreferences;
 
 /**
@@ -112,6 +113,7 @@ public class MainActivity extends AppCompatActivity {
                         dialog.cancel();
                     }
                 });
+                dialog.setTitle(R.string.commentTitle);
                 dialog.show();
             }
         });
@@ -155,15 +157,16 @@ public class MainActivity extends AppCompatActivity {
                     if (moodIterator.hasNext() && moodIndex < moodList.size() - 1) {
                         moodIndex++;
                         moodIterator.next();
+                        mp.start();
                     }
                 } else if (yDown < (yUp - MIN_MOVE_REQUIRED_FOR_SLIDE)) /* Move Down*/ {
                     if (moodIterator.hasPrevious() && moodIndex > 0) {
                         moodIndex--;
                         moodIterator.previous();
+                        mp.start();
                     }
                 }
                 displayMood();
-                mp.start();
                 return true;
             default:
                 return super.onTouchEvent(event);
